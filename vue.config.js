@@ -10,7 +10,8 @@ const config = {
   //....
   configureWebpack: {
     plugins: [new UniAppWeappTailwindcssWebpackPluginV4()]
-  }
+  },
+  transpileDependencies: ['@dcloudio/uni-ui']
   //....
 }
 

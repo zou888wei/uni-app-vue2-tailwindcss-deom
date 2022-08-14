@@ -1,0 +1,15 @@
+.play-box--room {
+	background-image: url('@/static/images/room-bg.jpeg');
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}
+
+.play-box--room-setting .uni-popup__wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.play-box--room-create .uni-popup__wrapper {
+	display: flex !important;
+	@apply items-center justify-center;
+}

@@ -1,0 +1,9 @@
+.login-box{
+	background-image: url('@/static/images/login-bg.jpeg');
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}
+
+.login-box .is-required{
+	display: none;
+}

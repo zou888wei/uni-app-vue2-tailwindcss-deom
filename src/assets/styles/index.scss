@@ -1,0 +1,32 @@
+@import './var.scss';
+@import './login.scss';
+@import './play.scss';
+@import './game.scss';
+@import './poker.scss';
+
+* {
+	font-size: 12rpx;
+}
+
+page {
+	height: 100%;
+}
+
+img {
+	width: 100%;
+	display: block;
+}
+
+.mask {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	/* #ifndef APP-NVUE */
+	display: flex;
+	/* #endif */
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.4);
+}

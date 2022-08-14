@@ -16,8 +16,8 @@
             "autoclose" : true,
             "delay" : 0
         },
-		/* 横屏相关设置 */
-		"orientation" : [ "landscape-primary" ],
+        /* 横屏相关设置 */
+        "orientation" : [ "landscape-primary" ],
         /* 模块配置 */
         "modules" : {},
         /* 应用发布信息 */
@@ -41,10 +41,13 @@
                     "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
                     "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
                     "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
-                ]
+                ],
+                "abiFilters" : [ "armeabi-v7a", "x86" ]
             },
             /* ios打包配置 */
-            "ios" : {},
+            "ios" : {
+                "dSYMs" : false
+            },
             /* SDK配置 */
             "sdkConfigs" : {
                 "ad" : {}
@@ -73,5 +76,31 @@
     "uniStatistics" : {
         "enable" : false
     },
-    "vueVersion" : "2"
+    "vueVersion" : "2",
+    "fallbackLocale" : "zh-Hans",
+    "h5" : {
+        "devServer" : {
+            "https" : false,
+            "port" : 8080,
+            "proxy" : {
+                "/webapi" : {
+                    "target" : "http://47.100.78.166:8088",
+                    "changeOrigin" : true,
+                    "secure" : false,
+                    "pathRewrite" : {
+                        "^/webapi" : "/"
+                    }
+                },
+                "/socket" : {
+                    "target" : "ws://47.100.78.166:8888",
+                    "changeOrigin" : true,
+                    "ws" : true,
+                    "pathRewrite" : {
+                        "^/socket" : "/"
+                    }
+                }
+            }
+        },
+        "title" : "德州扑克"
+    }
 }

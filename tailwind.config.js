@@ -8,6 +8,7 @@ module.exports = {
   purge: {
     content: ['public/index.html', './src/**/*.{vue,js,ts,jsx,tsx,wxml}']
   },
+  important: true,
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {}
