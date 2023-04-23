@@ -8,9 +8,12 @@
 					<span>金币</span>
 				</view> -->
 			</view>
-			<uni-icons type="gear-filled" size="30" style="color:white" @click="open()"></uni-icons>
+			<view class="w-6" @click="open()"><image class="w-full" mode="widthFix" src="@/static/images/setting.png" alt=""></image></view>
+			<!-- <uni-icons type="gear-filled" size="30" style="color:white" ></uni-icons> -->
 		</view>
-		<view class="flex-1 p-4 flex flex-row flex-wrap">
+
+		<view class="flex-1 px-4 pt-6 pb-4 flex flex-row flex-wrap relative">
+			<button class="absolute mx-1" style="transform: translate(0%, -130%);" type="primary" @click="handlerRoom()" size="mini">刷新列表</button>
 			<template v-if="options.length">
 				<view v-for="item in options" :key="item.roomId" class="bg-white mx-1 rounded flex flex-col" style="width: 87.89rpx; height:58.59rpx" @click="handlerPwd(item)">
 					<view class="bg-blue-600 text-white rounded-t" style="padding: 5px">
@@ -41,17 +44,18 @@
 			</view>
 		</uni-popup>
 		<uni-popup type="center" ref="popupCreate" class="play-box--room-create">
-			<view class="bg-gray-200 w-1/2 py-2 px-4 rounded">
+			<view class="bg-gray-200 w-2/3 py-2 px-4 rounded">
 				<h2 class="mb-2" style="font-size: 22px">创建房间</h2>
 				<uni-row :gutter="20">
-					<uni-forms :model="form" ref="form" class="max-w-full" :label-width="80" label-align="right">
-						<uni-col :span="12" v-for="(item, index) in data">
+					<uni-forms :model="form" ref="form" class="max-w-full" :label-width="70" label-align="right">
+						<uni-col :span="8" v-for="(item, index) in data">
 							<uni-forms-item :name="item.name" :label="item.label" :required="false">
-								<view class="flex flex-row border border-solid border-blue-500 rounded-sm" style="padding: 4.69rpx">
-									<input v-if="item.type" type="number" class="uni-input" focus v-model.trim="form[item.name]" :placeholder="'请输入' + item.label" />
-									<input v-else class="uni-input" focus v-model.trim="form[item.name]" :placeholder="'请输入' + item.label" />
+								<view v-if="item.type != 'switch'" class="flex flex-row border border-solid border-blue-500 rounded-sm" style="padding: 4.69rpx">
+									<input v-if="item.type == 'number'" type="number" class="uni-input" focus v-model.trim="form[item.name]" :placeholder="item.label" />
+									<input v-else class="uni-input" focus v-model.trim="form[item.name]" :placeholder="item.label" />
 									<text v-if="item.unit">{{ item.unit }}</text>
 								</view>
+								<switch v-else style="zoom:.9" @change="res => handlerSwitch(res, item.name)" />
 							</uni-forms-item>
 						</uni-col>
 					</uni-forms>
@@ -90,21 +94,29 @@ export default {
 				{ name: 'roomName', label: '房间名称' },
 				{ name: 'pwd', label: '房间密码' },
 				{ name: 'num', label: '房间人数', type: 'number', max: 9, tip: '人数' },
-				{ name: 'blindsAmount', label: '盲注', type: 'number' },
+				{ name: 'blindsAmount', label: '盲注', type: 'number', min: 1 },
 				{ name: 'score', label: '每人筹码', type: 'number' },
 				{ name: 'maxScore', label: '最大筹码', type: 'number' },
 				{ name: 'timeout', label: '操作时间', type: 'number', unit: '秒' },
-				{ name: 'gameTime', label: '游戏时长', type: 'number', unit: '分' }
+				{ name: 'gameTime', label: '游戏时长', type: 'number', unit: '分' },
+				{ name: 'delayCount', label: '延迟次数', type: 'number' },
+				{ name: 'prefixBet', label: '前置下注', type: 'switch' },
+				{ name: 'threeBet', label: '三人下注', type: 'switch' },
+				{ name: 'insurance', label: '保险', type: 'switch' }
 			],
 			form: {
-				blindsAmount: 0,
+				blindsAmount: 10,
 				gameTime: 7,
 				num: 6,
 				pwd: '',
 				roomName: '',
 				score: 1000,
 				timeout: 10,
-				maxScore: ''
+				maxScore: '',
+				delayCount: 0,
+				prefixBet: '0',
+				threeBet: '0',
+				insurance: '0'
 			},
 			formPwd: {
 				roomId: '',
@@ -120,9 +132,9 @@ export default {
 			clearInterval(this.time);
 		}
 		this.init();
-		this.time = setInterval(() => {
-			this.init();
-		}, 5000);
+		// this.time = setInterval(() => {
+		// 	this.init();
+		// }, 5000);
 	},
 	mounted() {
 		let rules = {};
@@ -136,17 +148,28 @@ export default {
 					errorMessage: '请输入' + item.label
 				};
 				rules[item.name].rules.push(res);
-				if (item.max)
+				if (item.max) {
 					rules[item.name].rules.push({
 						maximum: item.max,
 						errorMessage: '最大' + item.tip + '限制为' + item.max
 					});
+				}
+				if (item.min) {
+					rules[item.name].rules.push({
+						minimum: item.min,
+						errorMessage: '最小值为' + item.min
+					});
+				}
 			}
 		});
 		this.rules = rules;
 	},
 	methods: {
 		init() {
+			uni.showLoading({
+				title: '加载中'
+			});
+
 			this.$http(
 				{
 					url: '/game/room/list'
@@ -154,9 +177,11 @@ export default {
 				false
 			)
 				.then(res => {
+					uni.hideLoading();
 					this.options = Object.assign([], res);
 				})
 				.catch(err => {
+					uni.hideLoading();
 					if (err.statusCode == 401) {
 						this.handlerClear();
 					}
@@ -192,7 +217,11 @@ export default {
 		handlerPwd(v) {
 			this.formPwd.roomId = v.roomId;
 			this.formPwd.maxNum = v.maxNum;
+			this.formPwd.createUser = v.creator || '';
 			this.open('popupPwd');
+		},
+		handlerRoom() {
+			this.init();
 		},
 		handlerGoStart(v) {
 			if (v) {
@@ -208,6 +237,9 @@ export default {
 			} else {
 				this.goGame();
 			}
+		},
+		handlerSwitch(res, v) {
+			this.form[v] = res.detail.value ? '1' : '0';
 		},
 		goGame() {
 			if (this.time) {

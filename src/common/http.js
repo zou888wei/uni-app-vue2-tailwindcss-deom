@@ -6,20 +6,27 @@ let baseURL;
 if (process.env.NODE_ENV === 'development') {
 	baseURL = '/webapi' //测试
 } else {
-	baseURL = 'http://47.100.78.166:8088' //正式
+	baseURL = 'http://47.100.78.166:8224' //正式
+	// baseURL = 'http://47.100.78.166:8089' //正式
+	// baseURL = 'http://58i64u9459.goho.co:23635' //正式
 }
 
-const headers = {
+let headers = {
 	'X-Requested-With': 'XMLHttpRequest',
 	'Content-Type': 'application/json; charset=UTF-8'
 }
 const http = (obj, isLoading = true) => {
 	return new Promise((resolve, reject) => {
-		const options = Object.assign({}, obj)
-		let header = options.method == 'POST' ? headers : {
+		let options = Object.assign({}, obj)
+		let header = {}
+		if (options.headers) header = {
 			...headers,
-			"Accept": "application/json"
-		};
+			...options.headers
+		}
+		if (options.method == 'POST') {
+			header.Accept = "application/json"
+		}
+
 		if (getToken()) header.token = getToken()
 		if (options.dataType !== 'form-data' && options.params) {
 			const list = []
@@ -28,7 +35,7 @@ const http = (obj, isLoading = true) => {
 			}
 			options.url = options.url + '?' + list.join('&')
 		}
-		// if(options.headers) header = {...header, ...options.headers}
+
 		if (isLoading) {
 			uni.showLoading({
 				title: '加载中...',
